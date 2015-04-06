@@ -18,7 +18,7 @@ module interceptor =
     let log = LogManager.GetLogger("interceptor")
     
     ///<summary>
-    /// Finds requests that contains the given link and orders them by length
+    /// Finds requests that contain the given link and returns them in their original order
     ///</summary>
     ///<param name="stream">Requests</param>
     ///<param name="adr">Link</param>
