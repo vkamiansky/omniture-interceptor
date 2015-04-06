@@ -156,15 +156,18 @@ module interceptor =
         on := false
 
         let matches = matchResults (addressPairs addresses currentAddress candidateAddress) (!requests)
+        let numUnmatched = matches.Count(fun (a,_,_,_) -> not a)
+        let writeIfNotEmpty str = if str |> String.IsNullOrEmpty |> not then Console.WriteLine("{0}", str)
 
         Console.WriteLine("+++++")
         Console.WriteLine("Total omniture requests intercepted {0}.", (!requests).Length)
-        Console.WriteLine("Number of unmatched request pairs {0}. We expected to intercept & match {1} pairs.", matches.Count(fun (a,_,_,_) -> not a), matches.Count())
-        Console.WriteLine("Failed to intercept requests from addresses:")
-        List.iter (fun (a,b,c,_) -> if not a then Console.WriteLine("{0}\r\n{1}", b, c)) (matches)
-        Console.WriteLine("Matched pairs and requests logged.")
+        Console.WriteLine("Number of unmatched request pairs {0}. We expected to intercept & match {1} pairs.", numUnmatched, matches.Count())
+        if numUnmatched>0 then 
+            Console.WriteLine("Failed to intercept expected requests from the following addresses:")
+            List.iter (fun (a,b,c,_) -> if not a then (writeIfNotEmpty b; writeIfNotEmpty c;)) (matches)
         List.iter (fun (a,_,_,b) -> if a then log.Debug b) (matches)
         List.iter (fun req -> log.Debug req) (!requests)
+        Console.WriteLine("Matched pairs and requests logged.")
         Console.ReadKey() |>  ignore
 
         0 //exit code 
