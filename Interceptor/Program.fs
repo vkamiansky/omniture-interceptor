@@ -161,10 +161,12 @@ module interceptor =
 
         Console.WriteLine("+++++")
         Console.WriteLine("Total omniture requests intercepted {0}.", (!requests).Length)
-        Console.WriteLine("Number of unmatched request pairs {0}. We expected to intercept & match {1} pairs.", numUnmatched, matches.Count())
         if numUnmatched>0 then 
+            Console.WriteLine("Not all requests have been matched. Number of address pairs with unmatched requests was {0}.", numUnmatched)
             Console.WriteLine("Failed to intercept expected requests from the following addresses:")
             List.iter (fun (a,b,c,_) -> if not a then (writeIfNotEmpty b; writeIfNotEmpty c;)) (matches)
+        else 
+            Console.WriteLine("All requests matched successfully.")
         List.iter (fun (a,_,_,b) -> if a then log.Debug b) (matches)
         List.iter (fun req -> log.Debug req) (!requests)
         Console.WriteLine("Matched pairs and requests logged.")
