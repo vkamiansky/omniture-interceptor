@@ -116,7 +116,7 @@ module interceptor =
         mainSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, true)
         let control = mainSocket.IOControl(IOControlCode.ReceiveAll, [|byte(1);byte(0);byte(0);byte(0)|], [|byte(1);byte(0);byte(0);byte(0)|])
         
-        let rec reacieved (ar: IAsyncResult) =
+        let rec received (ar: IAsyncResult) =
 
             match new IPHeader(data.Value, data.Value.Length) with
             | ipHeader when ipHeader.ProtocolType = Protocol.TCP -> 
@@ -135,13 +135,13 @@ module interceptor =
             | _ -> ()
 
             data := Array.create 4096 ( new Byte() ) 
-            if !on then mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(reacieved), null)  |> ignore        
+            if !on then mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(received), null)  |> ignore        
         
         Console.WriteLine("To start capturing press a key...")
         Console.ReadKey() |>  ignore
         Console.WriteLine("Starting pages automatically. Expected to intercept at least {0} requests.", addresses.Length*2)
 
-        mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(reacieved), null) |> ignore
+        mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(received), null) |> ignore
             
         let browseUrls (urls: string list) =
            List.iter (fun (adr:string) -> Process.Start(adr)|> ignore; Threading.Thread.Sleep(3000)) urls
