@@ -99,7 +99,7 @@ module interceptor =
             let firstRequest = findRequestsWithAddress requests a
             let secondRequest = findRequestsWithAddress requests b
             match firstRequest, secondRequest with
-            | [], [] -> (true, a, b, "") :: matchResults tail requests
+            | [], [] -> (false, a, b, "") :: matchResults tail requests
             | [], _ -> (false, a, "", "") :: matchResults tail requests
             | _, [] -> (false, "", b, "") :: matchResults tail requests
             | first, second when first.Length = second.Length ->  
@@ -112,7 +112,7 @@ module interceptor =
                     (true, "", "", aggregatedText) :: matchResults tail requests
             | first, second when first.Length > second.Length -> (false, "", b, "") :: matchResults tail requests
             | first, second when first.Length < second.Length -> (false, a, "", "") :: matchResults tail requests
-            | _, _ -> (true, a, b, "") :: matchResults tail requests
+            | _, _ -> (false, a, b, "") :: matchResults tail requests
         | [] -> []
 
     [<EntryPoint>]
