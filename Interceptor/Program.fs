@@ -65,6 +65,7 @@ module interceptor =
     /// Recieves pairs links and returns a triade comprising
     /// a bool value showing if the pair has matching sets of requests
     /// then if unmatched the two faulty addresses with empty strings in place of non-faulty ones and a string of 
+    /// juxtaposed differing params of requests sent from those addresses in a readable form
     ///</summary>
     ///<param name="pairs">List of coupled web addresses the requests were supposed to be caught from</param>
     ///<param name="stream">List of all caught requests</param>
