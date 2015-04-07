@@ -20,7 +20,7 @@ module interceptor =
     ///</summary>
     ///<param name="stream">All requests</param>
     ///<param name="adr">Address</param>
-    let findRequestWithAddress (stream:string list) (adr:string) =
+    let findRequestsWithAddress (stream:string list) (adr:string) =
         let adrLower = adr.ToLowerInvariant()
         List.choose (fun (str:string) -> if str.Contains("Referer: " + adrLower + "\r\n") then Some str else None ) (stream)
 
@@ -72,8 +72,8 @@ module interceptor =
     let rec matchResults pairs (stream:string list) =
         match pairs with
         | (a, b) :: tail -> 
-            let firstRequest = findRequestWithAddress stream a
-            let secondRequest = findRequestWithAddress stream b
+            let firstRequest = findRequestsWithAddress stream a
+            let secondRequest = findRequestsWithAddress stream b
             match firstRequest, secondRequest with
             | [], [] -> (true, a, b, "") :: matchResults tail stream
             | [], _ -> (false, a, "", "") :: matchResults tail stream
