@@ -1,6 +1,5 @@
 ﻿namespace FirstLine
 open System
-open System.Collections.Generic
 open System.Collections.Specialized
 open System.Diagnostics
 open System.Linq
@@ -10,7 +9,6 @@ open System.IO
 open System.Text
 open System.Web
 open log4net
-open log4net.Config
 open Net.Data 
 
 module interceptor =
@@ -18,10 +16,10 @@ module interceptor =
     let log = LogManager.GetLogger("interceptor")
     
     ///<summary>
-    /// Finds requests that contain the given link and returns them in their original order
+    /// Finds requests sent from the following address and returns them in their original order
     ///</summary>
-    ///<param name="stream">Requests</param>
-    ///<param name="adr">Link</param>
+    ///<param name="stream">All requests</param>
+    ///<param name="adr">Address</param>
     let findRequestWithAddress (stream:string list) (adr:string) =
         let adrLower = adr.ToLowerInvariant()
         List.choose (fun (str:string) -> if str.Contains("Referer: " + adrLower + "\r\n") then Some str else None ) (stream)
@@ -56,18 +54,20 @@ module interceptor =
     /// Returns pairs of links for representing given rel paths in 2 environments
     ///</summary>
     ///<param name="relAddresses">List of relative page paths</param>
-    ///<param name="currentAddress">link to current environment</param>
-    ///<param name="candidateAddress">link to candidate environment</param>
+    ///<param name="currentAddress">base url of the current environment</param>
+    ///<param name="candidateAddress">base url of the candidate environment</param>
     let rec addressPairs relAddresses currentAddress candidateAddress =
         match relAddresses with
         | head :: tail -> (currentAddress + head, candidateAddress + head) :: addressPairs tail currentAddress candidateAddress
         | [] -> []
 
     ///<summary>
-    /// Recieves pairs of encoded links and prints out juxtaposed requests containing those links
+    /// Recieves pairs links and returns a triade comprising
+    /// a bool value showing if the pair has matching sets of requests
+    /// then if unmatched the two faulty addresses with empty strings in place of non-faulty ones and a string of 
     ///</summary>
-    ///<param name="pairs">List of coupled web addresses to seek in requests</param>
-    ///<param name="stream">List of requests</param>
+    ///<param name="pairs">List of coupled web addresses the requests were supposed to be caught from</param>
+    ///<param name="stream">List of all caught requests</param>
     let rec matchResults pairs (stream:string list) =
         match pairs with
         | (a, b) :: tail -> 
