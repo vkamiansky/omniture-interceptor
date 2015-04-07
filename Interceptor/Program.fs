@@ -37,9 +37,9 @@ module interceptor =
     ///<summary>
     /// Retrieves params from request
     ///</summary>
-    ///<param name="str">String request</param>
-    let getRequestToUrlParams (str:string) =
-        match str with
+    ///<param name="req">String request</param>
+    let getRequestToUrlParams (req:string) =
+        match req with
         | null -> "" 
         | str when str.Contains("GET") && str.Contains("HTTP") ->
              let adr = str.Split([|"GET "; "HTTP"|],StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
@@ -62,40 +62,57 @@ module interceptor =
         | [] -> []
 
     ///<summary>
+    /// Appends accumulated text with info about differing param values.
+    /// If values equal appends nothing
+    ///</summary>
+    ///<param name="acc">String accumulator</param>
+    ///<param name="param">param name</param>
+    ///<param name="cur">value in current env</param>
+    ///<param name="pro">value in proposed env</param>
+    let appendParamDiffText acc (param, cur , pro) =
+        if cur<>pro then acc + sprintf "param: %s\r\ncurrent:  %s\r\nproposed: %s\r\n" param cur pro else acc
+       
+    ///<summary>
+    /// Appends accumulated text with juxtaposed params for a pair of requests
+    /// Only adds params values of which differ in the two requests
+    ///</summary>
+    ///<param name="acc">String accumulator</param>
+    ///<param name="cur">request from current env</param>
+    ///<param name="cur">request from proposed env</param>
+    let appendRequestPairParamsText acc (cur, pro) = 
+        (getRequestToUrlParams cur) 
+        |> juxtapose (getRequestToUrlParams pro)
+        |> List.fold appendParamDiffText "\r\n=====\r\n"
+        |> (+) acc
+
+    ///<summary>
     /// Recieves pairs links and returns a triade comprising
     /// a bool value showing if the pair has matching sets of requests
     /// then if unmatched the two faulty addresses with empty strings in place of non-faulty ones and a string of 
     /// juxtaposed differing params of requests sent from those addresses in a readable form
     ///</summary>
-    ///<param name="pairs">List of coupled web addresses the requests were supposed to be caught from</param>
-    ///<param name="stream">List of all caught requests</param>
-    let rec matchResults pairs (stream:string list) =
-        match pairs with
+    ///<param name="addressPairs">List of coupled web addresses the requests were supposed to be caught from</param>
+    ///<param name="requests">List of all caught requests</param>
+    let rec matchResults addressPairs requests =
+        match addressPairs with
         | (a, b) :: tail -> 
-            let firstRequest = findRequestsWithAddress stream a
-            let secondRequest = findRequestsWithAddress stream b
+            let firstRequest = findRequestsWithAddress requests a
+            let secondRequest = findRequestsWithAddress requests b
             match firstRequest, secondRequest with
-            | [], [] -> (true, a, b, "") :: matchResults tail stream
-            | [], _ -> (false, a, "", "") :: matchResults tail stream
-            | _, [] -> (false, "", b, "") :: matchResults tail stream
-            | first, second when first.Length = second.Length ->   
-                    let pairsFromOneAddress = List.zip first second
+            | [], [] -> (true, a, b, "") :: matchResults tail requests
+            | [], _ -> (false, a, "", "") :: matchResults tail requests
+            | _, [] -> (false, "", b, "") :: matchResults tail requests
+            | first, second when first.Length = second.Length ->  
+                                                    
+                    let aggregatedText = 
+                        first
+                        |> List.zip second
+                        |> List.fold appendRequestPairParamsText "" 
 
-                    let toParamRecord (param, cur , pro) =
-                         if cur<>pro then String.Format("param: {0}\r\ncurrent:  {1}\r\nproposed: {2}\r\n", param, cur, pro) else ""
-                    
-                    let paramRecordsToText lst =
-                         List.fold (fun acc dat -> acc + (toParamRecord dat)) "\r\n=====\r\n" lst
-
-                    let toParamsText left right = 
-                         (getRequestToUrlParams left, getRequestToUrlParams right) ||> juxtapose |> paramRecordsToText 
-                                        
-                    let aggregatedText = List.fold (fun acc (left, right) -> acc + (toParamsText left right) ) "" pairsFromOneAddress
-
-                    (true, "", "", aggregatedText) :: matchResults tail stream
-            | first, second when first.Length > second.Length -> (false, "", b, "") :: matchResults tail stream
-            | first, second when first.Length < second.Length -> (false, a, "", "") :: matchResults tail stream
-            | _, _ -> (true, a, b, "") :: matchResults tail stream
+                    (true, "", "", aggregatedText) :: matchResults tail requests
+            | first, second when first.Length > second.Length -> (false, "", b, "") :: matchResults tail requests
+            | first, second when first.Length < second.Length -> (false, a, "", "") :: matchResults tail requests
+            | _, _ -> (true, a, b, "") :: matchResults tail requests
         | [] -> []
 
     [<EntryPoint>]
@@ -118,57 +135,63 @@ module interceptor =
         let control = mainSocket.IOControl(IOControlCode.ReceiveAll, [|byte(1);byte(0);byte(0);byte(0)|], [|byte(1);byte(0);byte(0);byte(0)|])
         
         let rec received (ar: IAsyncResult) =
-
             match new IPHeader(data.Value, data.Value.Length) with
             | ipHeader when ipHeader.ProtocolType = Protocol.TCP -> 
                 match new TCPHeader(ipHeader.Data, (int)ipHeader.MessageLength) with
                 | header when header.DestinationPort = "80" -> 
                      match Encoding.ASCII.GetString(header.Data).Replace(char(0).ToString(),"") with
                      | req when req.Contains("GET /b/ss/exabdev") -> requestAccum := req
-                     | req when (!requestAccum |> String.IsNullOrWhiteSpace |> not) ->
+                     | req when (!requestAccum |> (String.IsNullOrWhiteSpace >> not)) ->
                            if header.MessageLength >= 1460us then
                                 requestAccum := !requestAccum + req
                            else
                                 requests := List.append !requests [!requestAccum + req]; requestAccum := ""
-                                Console.WriteLine("caught one. now they're {0}", (!requests).Length);
+                                printf "caught one. now they're %d\r\n" (!requests).Length;
                      | _ -> ()
                 | _ -> ()
             | _ -> ()
-
             data := Array.create 4096 ( new Byte() ) 
             if !on then mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(received), null)  |> ignore        
-        
-        Console.WriteLine("To start capturing press a key...")
-        Console.ReadKey() |>  ignore
-        Console.WriteLine("Starting pages automatically. Expected to intercept at least {0} requests.", addresses.Length*2)
 
-        mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(received), null) |> ignore
-            
-        let browseUrls (urls: string list) =
+        let browseUrls urls =
            List.iter (fun (adr:string) -> Process.Start(adr)|> ignore; Threading.Thread.Sleep(3000)) urls
 
-        ((List.map (fun adr -> (currentAddress + adr)) addresses),(List.map (fun adr -> (candidateAddress + adr)) addresses)) 
-        ||> List.append
-        |> browseUrls         
+        let appendAbsoluteAddresses baseAdr relAddresses acc =
+           relAddresses
+           |> List.map (fun rel -> (baseAdr + rel))
+           |> List.append acc
 
-        Console.WriteLine("All pages started. To stop capturing press a key...")
+        let writeIfNotEmpty str = 
+           if str |> (String.IsNullOrEmpty >> not) then printf "%s\r\n" str
+
+        printf "To start capturing press a key...\r\n"
+        Console.ReadKey() |>  ignore
+        printf "Starting pages automatically. Expected to intercept at least %d requests.\r\n" (addresses.Length * 2)
+
+        mainSocket.BeginReceive(data.Value, 0, 4096, SocketFlags.None, new AsyncCallback(received), null) |> ignore
+
+        []
+        |> appendAbsoluteAddresses currentAddress addresses
+        |> appendAbsoluteAddresses candidateAddress addresses
+        |> browseUrls        
+
+        printf "All pages started. To stop capturing press a key...\r\n"
         Console.ReadKey() |>  ignore
 
         on := false
 
         let matches = matchResults (addressPairs addresses currentAddress candidateAddress) (!requests)
         let numUnmatched = matches.Count(fun (a,_,_,_) -> not a)
-        let writeIfNotEmpty str = if str |> String.IsNullOrEmpty |> not then Console.WriteLine("{0}", str)
 
         if numUnmatched>0 then 
-            Console.WriteLine("Not all requests have been matched. Number of address pairs with unmatched requests was {0}.", numUnmatched)
-            Console.WriteLine("Failed to intercept expected requests from the following addresses:")
+            printf "Not all requests have been matched. Number of address pairs with unmatched requests was %d.\r\n" numUnmatched
+            printf "Failed to intercept expected requests from the following addresses:\r\n"
             List.iter (fun (a,b,c,_) -> if not a then (writeIfNotEmpty b; writeIfNotEmpty c;)) (matches)
         else 
-            Console.WriteLine("All requests matched successfully.")
+            printf "All requests matched successfully.\r\n"
         List.iter (fun (a,_,_,b) -> if a then log.Debug b) (matches)
         List.iter (fun req -> log.Debug req) (!requests)
-        Console.WriteLine("Matched pairs, requests have been logged.")
+        printf "Matched pairs, requests have been logged.\r\n"
         Console.ReadKey() |>  ignore
 
         0 //exit code 
