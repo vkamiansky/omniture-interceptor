@@ -31,7 +31,7 @@ module interceptor =
     ///<param name="params1">Collection 1</param>
     ///<param name="params2">Collection 2</param>
     let juxtapose (params1:NameValueCollection) (params2:NameValueCollection) =
-        let unionKeys = (params1.AllKeys, params1.AllKeys) |> Enumerable.Union
+        let unionKeys = (params1.AllKeys, params2.AllKeys) |> Enumerable.Union
         List.map (fun (str:string) -> (str, params1.Item(str), params2.Item(str))) (unionKeys |> List.ofSeq)
 
     ///<summary>
