@@ -58,6 +58,9 @@
     <None Include="App.config" />
     <Content Include="packages.config" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Omniture.fs" />
+    <Compile Include="Request.fs" />
+    <Compile Include="Sut.fs" />
     <Compile Include="Program.fs" />
     <Content Include="testpath.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -78,13 +81,14 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebDriver">
+      <HintPath>packages\Selenium.WebDriver.2.45.0\lib\net40\WebDriver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
