@@ -20,13 +20,16 @@ module interceptor =
         let relAddresses = List.ofSeq (System.IO.File.ReadLines("testpath.txt"))
         let addressPairs = relAddresses |> List.map (fun adr -> currentBase + adr, candidateBase + adr)
 
-        printf "To start capturing press a key...\r\n"
+        printf "To start the test press a key...\r\n"
         Console.ReadKey() |>  ignore
         Omniture.intercept (fun () -> !on) (fun ()-> data) (fun req-> requests := !requests |> List.append [req]; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
      
-        printf "Starting pages automatically. %d pages will be opened each in 2 environments.\r\n" (relAddresses.Length)
-        addressPairs |> List.iter (fun (cur, pro)-> [cur; pro] |> Sut.browseUrls) 
-        printf "All pages started. To stop capturing press a key...\r\n"
+        printf "Carrying out test scenario. %d pages will be opened each in 2 environments, requests intercepted.\r\n" (relAddresses.Length)
+        addressPairs
+        |> List.collect (fun (cur, pro) -> [cur; pro])
+        |> Sut.runScenario (fun adr -> printf "Starting '%s'\r\n" adr) (fun adr -> printf " -Ready\r\n") (fun () -> printf " -Page load timeout\r\n") (fun () -> printf " -Slideshow click\r\n")
+
+        printf "Test scenario finished. To stop capturing press a key...\r\n"
         Console.ReadKey() |>  ignore
 
         on := false
@@ -37,7 +40,7 @@ module interceptor =
         if numUnmatched>0 then 
             printf "Not all requests have been matched. Number of address pairs with unmatched requests was %d.\r\n" numUnmatched
             printf "Failed to intercept expected requests from the following addresses:\r\n"
-            List.iter (fun (a,b,c,_) -> if not a then (writeIfNotEmpty b; writeIfNotEmpty c;)) (matches)
+            List.iter (fun (a,b,c,_) -> if not a then [b; c] |> List.iter writeIfNotEmpty) (matches)
         else 
             printf "All requests matched successfully.\r\n"
         List.iter (fun (a,_,_,b) -> if a then log.Debug b) (matches)
