@@ -15,7 +15,6 @@ module Sut =
                 doPageOpenStart url
                 driver.Navigate().GoToUrl(url)
                 doPageOpenReady url
-                Thread.Sleep(3000)
                 match driver.FindElementsByClassName("b-slideshow__next") |> List.ofSeq with
                     | slideshowNext :: _ -> doSlideshowClick (); slideshowNext.Click()
                     | [] -> ()
