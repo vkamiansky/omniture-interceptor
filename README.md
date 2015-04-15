@@ -40,6 +40,6 @@ Example environments config section:
 </configuration> 
 ```
 
-3) The Omniture requests capturing process is started by pressing a key; 
+3) The testing process is started by running **Interceptor.exe** and pressing a key; 
 
 4) The differences between parameters of the requests captured for the candidate and the current environments as well as all the caught requests will be saved to the **log-file.txt**. 
