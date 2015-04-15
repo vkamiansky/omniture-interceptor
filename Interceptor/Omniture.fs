@@ -32,7 +32,7 @@ module Omniture =
                 match new TCPHeader(ipHeader.Data, (int)ipHeader.MessageLength) with
                 | header when header.DestinationPort = "80" -> 
                         match Encoding.ASCII.GetString(header.Data).Replace(char(0).ToString(),"") with
-                        | req when req.Contains("GET /b/ss/exabdev") && (req.Contains("pccr")|>not) -> requestAccum := req
+                        | req when req.Contains("GET /b/ss/exabdev") && (req.Contains("pccr")|>not) && (req.Contains("lnk_e")|>not) -> requestAccum := req
                         | req when (!requestAccum |> (String.IsNullOrWhiteSpace >> not)) ->
                             if header.MessageLength >= 1460us then
                                 requestAccum := !requestAccum + req

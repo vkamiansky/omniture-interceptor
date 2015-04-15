@@ -60,7 +60,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Omniture.fs" />
     <Compile Include="Request.fs" />
-    <Compile Include="Sut.fs" />
+    <Compile Include="Scenario.fs" />
     <Compile Include="Program.fs" />
     <Content Include="testpath.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
