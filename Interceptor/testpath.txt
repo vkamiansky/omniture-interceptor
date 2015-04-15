@@ -9,3 +9,4 @@ nyheter/tva-friade-for-utlandsfiske/
 nyheter/jag-at-sakert-ett-par-kilo-socker-i-veckan/
 
 sport/
+sok/?q=lyssna
