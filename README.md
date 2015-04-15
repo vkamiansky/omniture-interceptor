@@ -1,13 +1,17 @@
 # omniture-interceptor
-A tool that opens expressen pages in two different test environments and juxtaposes the parameters of Omniture requests coming from the pages with same relative paths, logs the differences, caught requests.
+Omniture Interceptor is a regression testing tool designed for the Expressen statistics functionality.
+It runs a specified set of Expressen pages through a number of test scenarios and tracks the discrepancies between the  Omniture requests as formed by two different environments. 
 
-The tool works like this:
+The tool has been tested to run properly on a Windows 7 machine with Firefox installed and without network access restrictions through firewall or otherwise applied.
 
-1) The file called **testpath.txt** is read from the app's folder to get relative paths of the pages under test;
+The tool uses Selenium WebDriver to carry out it's automated testing scenarios.
+
+1) The relative paths of the pages called during the tests are specified in **testpath.txt**.;
 
 Example file content:
 
 ```
+tv/nyheter/forlorade-halva-skallen-nar-han-korde-drogpaverkad/
 nyheter/plus-folj-presidentvalet---direkt-pa-expressen/
 nyheter/utmaningarna-for-framtidens-sverigey/
 nyheter/tag-star-stilla-i-skane-efter-olycka-i-hoor/
@@ -15,11 +19,13 @@ nyheter/anton-17-tar-traktorn-till-skolan-i-klippan/
 nyheter/live-temperaturen-kommer-stiga-i-ratten/
 nyheter/sra-quiz/
 nyheter/tva-friade-for-utlandsfiske/
+nyheter/jag-at-sakert-ett-par-kilo-socker-i-veckan/
 
 sport/
+sok/?q=lyssna
 ```
 
-2) *Interceptor.exe.config* (**app.config**) is used to read addresses of the current and the candidate environments;
+2) The base addresses for the two environments - the current and the candidate - are specified in **Interceptor.exe.config**;
 
 Example environments config section:
 
@@ -34,8 +40,6 @@ Example environments config section:
 </configuration> 
 ```
 
-4) The Omniture requests capturing process is started by pressing a key; 
+3) The Omniture requests capturing process is started by pressing a key; 
 
-5) Pages will be opened automatically with an interval of 3 seconds. When a request is captured an echo message is sent to console. As soon as all the pages are opened the respective message will be printed out and you will be able to stop the capturing process by pressing a key when ready.
-
-6) The differences between parameters of requests captured for the candidate and the current environments as well as all the caught requests will be saved to the log file. 
+4) The differences between parameters of the requests captured for the candidate and the current environments as well as all the caught requests will be saved to the **log-file.txt**. 
