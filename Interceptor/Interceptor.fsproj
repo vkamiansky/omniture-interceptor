@@ -58,6 +58,7 @@
     <None Include="App.config" />
     <Content Include="packages.config" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="List.fs" />
     <Compile Include="Omniture.fs" />
     <Compile Include="Request.fs" />
     <Compile Include="Scenario.fs" />

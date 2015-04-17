@@ -10,11 +10,10 @@ module Scenario =
     let driverGet () =
         new FirefoxDriver()
 
-    let driverBrowse (url:string) doPageOpenStart doPageOpenReady (driver:RemoteWebDriver) =
+    let driverBrowse (url:string) doPageOpenStart (driver:RemoteWebDriver) =
         doPageOpenStart url
         driver.Navigate().GoToUrl(url)
         Thread.Sleep(1000)
-        doPageOpenReady url
     
     let driverFindSelector sel (driver:RemoteWebDriver) =
         sel |> driver.FindElementsByCssSelector |> List.ofSeq
@@ -29,13 +28,13 @@ module Scenario =
                         switcher 
                         |> List.tryFind( fun opt -> opt.Text = channel)
                         |> function
-                        | Some opt -> opt.Click(); Thread.Sleep(5000)
-                        | None -> ()
+                                  | Some opt -> opt.Click(); Thread.Sleep(5000)
+                                  | None -> ()
             | _ -> ()
 
-    let run doPageOpenStart doPageOpenReady doTimeout doSlideshowClick doTabClick doTabShowMoreClick doTabReadMoreClick doTabLinkClick doGoMobile urls =
+    let run doPageOpenStart doTimeout doSlideshowClick doTabClick doTabShowMoreClick doTabReadMoreClick doTabLinkClick doGoMobile urls =
         let driver = ref (driverGet())
-        let browse url = !driver |> driverBrowse url doPageOpenStart doPageOpenReady
+        let browse url = !driver |> driverBrowse url doPageOpenStart
         let findSel sel = !driver |> driverFindSelector sel
         let cleanup() = !driver |> driverCleanup
         let reset() = driver := driverGet()
