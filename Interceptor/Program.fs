@@ -44,7 +44,7 @@ module interceptor =
         printf "Carrying out test scenario. %d pages will be opened each in 2 environments, requests intercepted.\r\n" (relAddresses.Length)
         addresses
         |> inBatchesOfN 4
-        |> List.iter (fun l -> l |> Scenario.run (fun adr -> printf "Starting '%s'\r\n" adr) (fun adr -> printf " -Ready\r\n") (fun () -> printf " -Page load timeout\r\n") (fun () -> printf " -Slideshow click\r\n") (fun t -> printf " -\"%s\" Tab click\r\n" t) (fun () -> printf " -Tab show more click\r\n") (fun () -> printf " -Tab senaste dygnet click\r\n")  (fun l -> printf " -\"%s\" Tab link click\r\n" l)) 
+        |> List.iter (fun l -> l |> Scenario.run (fun adr -> printf "Starting '%s'\r\n" adr) (fun _ -> printf " -Ready\r\n") (fun () -> printf " -Page load timeout\r\n") (fun () -> printf " -Slideshow click\r\n") (fun t -> printf " -\"%s\" Tab click\r\n" t) (fun () -> printf " -Tab show more click\r\n") (fun () -> printf " -Tab senaste dygnet click\r\n") (fun l -> printf " -\"%s\" Tab link click\r\n" l) (fun () -> printf " Mobile version\r\n")) 
 
         printf "Test scenario finished. To stop capturing press a key...\r\n"
         Console.ReadKey() |>  ignore

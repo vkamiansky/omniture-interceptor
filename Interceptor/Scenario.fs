@@ -19,20 +19,30 @@ module Scenario =
     let driverFindSelector sel (driver:RemoteWebDriver) =
         sel |> driver.FindElementsByCssSelector |> List.ofSeq
 
-    let driverCleanup (driver:RemoteWebDriver)  =
+    let driverCleanup (driver:RemoteWebDriver) =
         driver.Quit()
         driver.Dispose()
 
-    let run doPageOpenStart doPageOpenReady doTimeout doSlideshowClick doTabClick doTabShowMoreClick doTabReadMoreClick doTabLinkClick urls =
+    let switchChannel channel (driver:RemoteWebDriver) =
+        match driver |> driverFindSelector ".current" with
+            | switcher when switcher |> List.length > 0 -> 
+                        switcher 
+                        |> List.tryFind( fun opt -> opt.Text = channel)
+                        |> function
+                        | Some opt -> opt.Click(); Thread.Sleep(5000)
+                        | None -> ()
+            | _ -> ()
+
+    let run doPageOpenStart doPageOpenReady doTimeout doSlideshowClick doTabClick doTabShowMoreClick doTabReadMoreClick doTabLinkClick doGoMobile urls =
         let driver = ref (driverGet())
         let browse url = !driver |> driverBrowse url doPageOpenStart doPageOpenReady
         let findSel sel = !driver |> driverFindSelector sel
         let cleanup() = !driver |> driverCleanup
         let reset() = driver := driverGet()
+        let mobile() = !driver |> switchChannel "MOBILVERSION"
 
         let runPageScenario (url:string) =
             try
-                browse url 
                 match findSel ".b-slideshow__next" with
                     | slideshowNext :: _ -> doSlideshowClick (); slideshowNext.Click(); Thread.Sleep(1000) 
                     | [] -> ()
@@ -60,5 +70,13 @@ module Scenario =
             with
                 | ex -> (cleanup >> reset)()
 
-        urls |> List.iter runPageScenario
+        let runScenarioBothPlatforms url =
+            (!driver).Manage().Cookies.DeleteAllCookies()
+            browse url 
+            runPageScenario url
+            doGoMobile()
+            mobile()
+            runPageScenario url
+
+        urls |> List.iter runScenarioBothPlatforms
         cleanup()

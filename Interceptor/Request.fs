@@ -6,9 +6,12 @@ open System.Web
 
 module Request =
 
-    let findWithAddress (adr:string) (requests:string list) =
+    let findWithReferer (adr:string) (requests:string list) =
         let adrLower = adr.ToLowerInvariant()
         List.choose (fun (str:string) -> if str.Contains("Referer: " + adrLower + "\r\n") then Some str else None ) (requests)
+
+    let findWithRefererMulEndings (adr:string) endings (requests:string list) =
+        endings |> List.collect (fun e -> requests |> findWithReferer (adr + e))
 
     let juxtapose (params1:NameValueCollection) (params2:NameValueCollection) =
         let unionKeys = (params1.AllKeys, params2.AllKeys) |> Enumerable.Union
@@ -35,10 +38,11 @@ module Request =
         |> (+) acc
 
     let rec matchesForAddressPairs addressPairs requests =
+        let platformEndings = [""; "?site=mobile"; "&site=mobile"]
         match addressPairs with
         | (a, b) :: tail -> 
-            let requestsAddressA = requests |> findWithAddress  a
-            let requestsAddressB = requests |> findWithAddress  b
+            let requestsAddressA = requests |> findWithRefererMulEndings  a  platformEndings
+            let requestsAddressB = requests |> findWithRefererMulEndings  b  platformEndings
             match requestsAddressA, requestsAddressB with
             | [], [] -> (false, a, b, "") :: matchesForAddressPairs tail requests
             | [], _ -> (false, a, "", "") :: matchesForAddressPairs tail requests
