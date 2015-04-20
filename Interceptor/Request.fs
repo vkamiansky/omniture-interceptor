@@ -50,9 +50,7 @@ module Request =
                 let requestsAddressA = requests |> findWithRefererMulEndings  a  platformEndings
                 let requestsAddressB = requests |> findWithRefererMulEndings  b  platformEndings
                 match requestsAddressA, requestsAddressB with
-                    | [], [] -> None 
-                    | [], _  -> None
-                    | _, []  -> None 
+                    | [], _ | _, [] -> None
                     | first, second when first.Length = second.Length ->  
                                                     
                             let aggregatedText = 

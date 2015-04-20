@@ -4,7 +4,7 @@ module List =
     
     let rec skip n (lst : 'a list) =
         match lst with
-        | _::tail -> if n <= 1 then tail else tail |> skip(n-1)
+        | _::tail -> if n <= 0 then lst else tail |> skip(n-1)
         | _ -> []
 
     let rec take n (lst : 'a list) =

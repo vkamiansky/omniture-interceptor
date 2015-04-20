@@ -1,12 +1,10 @@
 ﻿namespace FirstLine
 open System
-open System.Linq
+open System.Diagnostics
+open System.Threading
 open log4net
 
 module interceptor =
-
-    let writeIfNotEmpty str = 
-        if str |> (String.IsNullOrEmpty >> not) then printf "%s\r\n" str
 
     [<EntryPoint>]
     let main argv = 
@@ -17,17 +15,7 @@ module interceptor =
         let log = LogManager.GetLogger("interceptor")
         let currentBase = System.Configuration.ConfigurationManager.AppSettings.["current"]
         let candidateBase = System.Configuration.ConfigurationManager.AppSettings.["candidate"]
-        let relAddresses = List.ofSeq (System.IO.File.ReadLines("testpath.txt"))
-
-        printf "Press Enter to start the test...\r\n"
-        Console.ReadKey() |>  ignore
-
-        Omniture.intercept 
-                     (fun () -> !on) 
-                     (fun ()-> data) 
-                     (fun req-> requests := !requests |> List.append [req]; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
-     
-        printf "Test scenario started.\r\n"
+        let relAddresses = System.IO.File.ReadLines("testpath.txt") |> List.ofSeq
 
         let rec repeatRunMatch testRelAddresses =
 
@@ -37,35 +25,51 @@ module interceptor =
             |> List.iter 
                 (fun l -> l 
                           |> Scenario.run 
-                                (fun adr -> printf " Starting '%s'\r\n" adr) 
-                                (fun ()  -> printf " -Page load timeout\r\n") 
-                                (fun ()  -> printf " -Slideshow click\r\n") 
-                                (fun t   -> printf " -\"%s\" Tab click\r\n" t) 
-                                (fun ()  -> printf " -Tab show more click\r\n") 
-                                (fun ()  -> printf " -Tab senaste dygnet click\r\n") 
-                                (fun l   -> printf " -\"%s\" Tab link click\r\n" l) 
-                                (fun ()  -> printf " Mobile version\r\n")) 
-
-            let faultyRelAddresses = !requests |> Request.processParamsDiffTexts 
-                                                    currentBase 
-                                                    candidateBase 
-                                                    testRelAddresses
-                                                    (fun diff-> log.Debug diff)
-
-            match faultyRelAddresses with
-                | faultyLst when faultyLst |> List.length > 0 ->
+                                  (function
+                                    | Scenario.PageOpenBefore adr -> printf " Starting '%s'\r\n" adr
+                                    | Scenario.SlideshowNextClickBefore -> printf " -Slideshow Next click\r\n"
+                                    | Scenario.TabShowMoreClickBefore -> printf " -Tab show more click\r\n"
+                                    | Scenario.TabReadMoreClickBefore -> printf " -Tab senaste dygnet click\r\n"
+                                    | Scenario.TabClickBefore tab -> printf " -\"%s\" Tab click\r\n" tab
+                                    | Scenario.TabLinkClickBefore lnk -> printf " -\"%s\" Tab link click\r\n" lnk
+                                    | Scenario.SwitchMobileBefore -> printf " Mobile version\r\n"
+                                    | Scenario.ShareButtomClickBefore btn -> printf " -\"%s\" Share button click\r\n" btn
+                                    | Scenario.Error msg -> printf " -Error: %s\r\n" msg; log.Debug msg
+                                    | Scenario.VideoDisplay -> Thread.Sleep 90000
+                                    | _ -> Thread.Sleep 1000
+                                    ))
+                                   
+            !requests 
+            |> Request.processParamsDiffTexts currentBase candidateBase testRelAddresses (fun diff -> log.Debug diff)
+            |> function
+                | faultyAddressesLst when faultyAddressesLst |> List.length > 0 ->
                        printf "Not all requests have been matched successfully. See the faulty rel addresses below.\r\n"
-                       faultyLst |> List.iter (fun adr -> printf "%s\r\n" adr)
+                       faultyAddressesLst |> List.iter (fun adr -> printf "\\%s\r\n" adr)
                        printf "The test will be run again for the addresses above.\r\n"
                        requests := []
-                       faultyLst |> repeatRunMatch 
+                       faultyAddressesLst |> repeatRunMatch 
                 | _ -> 
                        on := false
-                       printf "All requests matched successfully. See log file for results.\r\n"
+                       printf "All requests matched successfully.\r\n"
 
-        let timeStart = DateTime.Now
-        repeatRunMatch relAddresses
-        printf "And it all took %f minutes.\r\n" (DateTime.Now.Subtract timeStart).TotalMinutes
-        printf "Press Enter to exit...\r\n"
+        printf "Press any key to start the test...\r\n"
         Console.ReadKey() |>  ignore
+
+        Omniture.intercept 
+                     (fun () -> !on) 
+                     (fun ()-> data) 
+                     (fun req-> requests := !requests |> List.append [req]; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
+
+        printf "Starting test scenario...\r\n"
+        let timeStart = DateTime.Now
+        relAddresses |> repeatRunMatch
+        printf "The test took %f minutes to complete.\r\n" (DateTime.Now.Subtract timeStart).TotalMinutes
+        
+        printf "Press any key to open the resulting log file...\r\n"
+        Console.ReadKey() |>  ignore
+        log.Logger.Repository.GetAppenders() |> function
+            | app when app.Length > 0 -> app.[0] |> function
+                | :? Appender.FileAppender as fap -> Process.Start fap.File |> ignore
+                | _ -> ()
+            | _ -> ()
         0 //exit code 
