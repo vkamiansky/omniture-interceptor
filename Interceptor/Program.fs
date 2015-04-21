@@ -6,6 +6,11 @@ open log4net
 
 module interceptor =
 
+    let minutesSince startTime =
+        startTime |> function
+            | timePoint when DateTime.Now > timePoint -> (DateTime.Now.Subtract timePoint).TotalMinutes
+            | _ -> -1.
+
     [<EntryPoint>]
     let main argv = 
         let on = ref true    
@@ -17,7 +22,7 @@ module interceptor =
         let candidateBase = System.Configuration.ConfigurationManager.AppSettings.["candidate"]
         let relAddresses = System.IO.File.ReadLines("testpath.txt") |> List.ofSeq
 
-        let rec repeatRunMatch testRelAddresses =
+        let rec repeatRunMatch startTime testRelAddresses =
 
             testRelAddresses 
             |> List.collect (fun rel -> [currentBase + rel; candidateBase + rel])
@@ -28,6 +33,7 @@ module interceptor =
                                   (function
                                     | Scenario.PageOpenBefore adr -> printf " Starting '%s'\r\n" adr
                                     | Scenario.SlideshowNextClickBefore -> printf " -Slideshow Next click\r\n"
+                                    | Scenario.SlideshowPopupClickBefore -> printf " -Slideshow popup click\r\n"
                                     | Scenario.TabShowMoreClickBefore -> printf " -Tab show more click\r\n"
                                     | Scenario.TabReadMoreClickBefore -> printf " -Tab senaste dygnet click\r\n"
                                     | Scenario.TabClickBefore tab -> printf " -\"%s\" Tab click\r\n" tab
@@ -42,15 +48,15 @@ module interceptor =
             !requests 
             |> Request.processParamsDiffTexts currentBase candidateBase testRelAddresses (fun diff -> log.Debug diff)
             |> function
-                | faultyAddressesLst when faultyAddressesLst |> List.length > 0 ->
+                | faultyAddrLst when faultyAddrLst |> List.length > 0 ->
                        printf "Not all requests have been matched successfully. See the faulty rel addresses below.\r\n"
-                       faultyAddressesLst |> List.iter (fun adr -> printf "\\%s\r\n" adr)
-                       printf "The test will be run again for the addresses above.\r\n"
+                       faultyAddrLst |> List.iter (fun adr -> printf "\\%s\r\n" adr)
+                       printf "The test will be rerun for the addresses above.\r\n"
                        requests := []
-                       faultyAddressesLst |> repeatRunMatch 
+                       faultyAddrLst |> repeatRunMatch startTime
                 | _ -> 
                        on := false
-                       printf "All requests matched successfully.\r\n"
+                       printf "All requests matched successfully in %f minutes.\r\n" (minutesSince startTime)
 
         printf "Press any key to start the test...\r\n"
         Console.ReadKey() |>  ignore
@@ -61,10 +67,8 @@ module interceptor =
                      (fun req-> requests := !requests |> List.append [req]; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
 
         printf "Starting test scenario...\r\n"
-        let timeStart = DateTime.Now
-        relAddresses |> repeatRunMatch
-        printf "The test took %f minutes to complete.\r\n" (DateTime.Now.Subtract timeStart).TotalMinutes
-        
+        relAddresses |> repeatRunMatch DateTime.Now
+                
         printf "Press any key to open the resulting log file...\r\n"
         Console.ReadKey() |>  ignore
         log.Logger.Repository.GetAppenders() |> function

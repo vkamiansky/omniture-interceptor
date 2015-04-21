@@ -26,7 +26,7 @@ module Request =
                      | null -> ""
                      | adr when adr.Length > 0 -> adr.SkipWhile(fun chr -> chr<>'?').Skip(1) |> String.Concat
                      | adr -> "" 
-            | req -> ""
+            | _ -> ""
         |> HttpUtility.ParseQueryString
 
     let toJuxtaposedParams (params1:NameValueCollection) (params2:NameValueCollection) =

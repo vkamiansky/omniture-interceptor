@@ -8,6 +8,8 @@ module Scenario =
         | PageOpenAfter
         | SlideshowNextClickBefore
         | SlideshowNextClickAfter
+        | SlideshowPopupClickBefore
+        | SlideshowPopupClickAfter
         | TabShowMoreClickBefore
         | TabShowMoreClickAfter
         | TabReadMoreClickBefore
@@ -75,6 +77,9 @@ module Scenario =
                 match findSel ".b-slideshow__next" with
                     | slideshowNext :: _ -> doAction SlideshowNextClickBefore; slideshowNext.Click(); doAction SlideshowNextClickAfter
                     | [] -> ()
+                match findSel ".b-slideshow__group-wrap .b-slideshow__open" |> List.tryFind(fun btn -> btn.Displayed) with
+                    | Some slideshowPopup  -> doAction SlideshowPopupClickBefore; slideshowPopup.Click(); back(); doAction SlideshowPopupClickAfter
+                    | None -> ()
                 match findSel ".b-share__facebook,.b-share__twitter,.b-share__mail,.b-share__print" with
                     | btns when btns.Length > 0 -> 
                         btns |> List.iter (fun btn -> doAction (ShareButtomClickBefore btn.Text); btn.Click(); doAction ShareButtomClickAfter )
