@@ -42,4 +42,18 @@ Example environments config section:
 
 3) The testing process is started by running **Interceptor.exe** and pressing a key; 
 
-4) The differences between parameters of the requests captured for the candidate and the current environments as well as all the caught requests will be saved to the **log-file.txt**. 
+4) The differences between parameters of the requests captured for the candidate and the current environments as well as all the caught requests will be saved to the **log-file.txt**. When the program successfully matches all requests it will ask you to press a key to open the *log file* and leave the program.
+
+The test scenarios currently implemented include the following:
+
+* Opening page addresses in two environments on mobile and desktop plus the following:
+* Slideshow next on desktop. Slideshow full screen on mobile.
+* Sharing buttons, mail button on desktop and mobile. Print button on mobile.
+* Tabs widget on start page: switching tabs, show more on mobile and desktop. Senaste dygnet on desktop.
+* HTML player: waiting for the autorun video to end on desktop and mobile.
+
+Yet to implement:
+
+* Quiz next, next, complete on desktop and mobile.
+
+
