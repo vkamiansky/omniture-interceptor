@@ -56,4 +56,4 @@ Yet to implement:
 
 * Quiz next, next, complete on desktop and mobile.
 
-The tool is written in F#. Learn the [Basics of F#](https://github.com/vkamiansky/omniture-interceptor/blob/master/fsharp-in-short.md)
+The tool is written in F#. If F# looks double Dutch to you, please, learn the [basics of F#](https://github.com/vkamiansky/omniture-interceptor/blob/master/fsharp-in-short.md).
