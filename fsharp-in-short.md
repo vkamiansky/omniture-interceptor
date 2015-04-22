@@ -86,10 +86,12 @@ let lst = [1; 2; 3]
 ```
 If a statement produces no value, its type is `unit`. You can turn a value of any type into `unit` by using the function `ignore`.
 ```f#
-let proced a =        // This function has type int -> unit
-    a + a |> ignore   
+let empty a =        // This function has type int -> unit
+    a + a |> ignore
+    
+let empty2 () =      // Expects no parameters
+    ()               // Returns unit (here's how it looks)
 ```
-
 
 3) Tuples, lists, arrays 
 
