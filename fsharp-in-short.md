@@ -235,4 +235,4 @@ let rec take n (lst : 'a list) =
 ``` 
 The function returns first n elements of the list. 
 
-By now you should have enough F# knowledge to read the sources of the Omniture interceptor and to continue studying F#. 
+By now you should have enough F# knowledge to read the sources of the Omniture Interceptor and to continue studying F#. 
