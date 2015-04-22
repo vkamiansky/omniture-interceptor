@@ -23,13 +23,15 @@ let a = a + 1  // Get what name a was bound to, add 1, bind name a to the result
 The value by the name `a` is immutable. If we want to change it (scenarios of interop with legacy code e.g. C#) we can do this.
 ```f#
 let mutable a = 4      // Bind name a to mutable cell, initialize it with 4
-a <- a + 1            // Get the value of what name a was bound to, add 1, send the result to cell a is bound to
+a <- a + 1             // Get the value of what name a was bound to, add 1, 
+                       // send the result to cell a is bound to
 ```
 Assignment. For multithreaded data exchange using legacy approach from C# we use *reference cells*
 ```f#
-let a 
-    = ref 4        // Bind name a to reference cell, initialize it with 4. This statement has type 'int ref'
-a := !a + 1        // Get the value of the reference cell a was bound to, add 1, send the result to cell a is bound to
+let a              // Bind name a to reference cell, initialize it with 4.
+    = ref 4        // This statement has type 'int ref'  
+a := !a + 1        // Get the value of the reference cell a was bound to, 
+                   // add 1, send the result to cell a is bound to
 ```
 Note: the second line of the code above is indented. That means it is a continuation of the statement above, not a statement on the same level.
 
@@ -82,3 +84,55 @@ Or simpler... remember, the operators
 let lst = [1; 2; 3]
           |> List.map ((+) 1)
 ```
+If a statement produces no value, its type is `unit`. You can turn a value of any type into `unit` by using the function `ignore`.
+```f#
+let proced a =        // This function has type int -> unit
+    a + a |> ignore   
+```
+
+
+3) Tuples, lists, arrays
+
+Tuples have types that are product of several types. If you see something **comma** delimited it's a **tuple**.
+```f#
+let tpl = 3., 4. // A tuple of type  float * float
+```
+Join a fev values into a tuple you can use the tuple to complete as many stages of type transition as you specify. It's done like this: 
+```f#
+let s2 = (3., 4.) ||> (/)        // It's just another way to devide 3. by 4. 
+let s3 = ((/), 4., 3.) |||> rev  // And yet another way to do this (see the rev function above)
+let s2 = ((/), 4.) ||> rev       // 2 out of three transitions leave us with float -> float
+let s2 = 3. |> s2                // And the same result here 
+```
+Too difficult? No? By now your mind muscule should be warm and ready. To the lists and arrays stuff.
+```f#
+let lst = [3.; 4.; 5.]       // lst is bound to a float list
+let arr = [|3.; 4.; 5.|]     // arr is bound to an array (float [])
+let elem = arr.[0]           // This is the way we use indices
+```
+Want to refresh your memory on the difference between lists and arrays. Here's a [link] (http://coders-corner.net/2014/03/09/f-array-vs-list/). Obviously, you can use list functions with lists and array functions with arrays. Here are some of them.
+```f#
+let lst = [3.; 4.; 5.]
+          |> List.map (fun x -> x * x) // One to one function. Each elem squared
+```
+The result is `[9.; 16.; 25.]`.
+```f#
+let lst = [3.; 4.; 5.]
+          |> List.collect (fun x -> [x ; -x]) // One to many. Each elem adds itself
+                                              // and itself negated to result list
+```
+The result is `[3.; -3.; 4.; -4.; 5.; -5.]`.
+```f#
+[3.; 4.; 5.]
+|> List.iter (printf "%f ")      // Unit. Goes through elements and returns no value
+                                 // In this case prints out the elements
+```
+[`printf`](https://msdn.microsoft.com/en-us/library/ee370560.aspx) is an F# way to send something to console.
+```f#
+let sum = [3.; 4.; 5.]
+          |> List.fold (+) 0.     // Many to one. Goes through elements and applies a function
+                                  // that turns the accumulated value and the current value into
+                                  // a new accumulated value. It returns the resulting accumulated
+                                  // value. Here we specify the initial accumulated value as 0.
+```
+The result is `12.`.
