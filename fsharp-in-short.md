@@ -99,7 +99,7 @@ Tuples have types that are product of several types. If you see something **comm
 ```f#
 let tpl = 3., 4. // A tuple of type  float * float
 ```
-Join a fev values into a tuple you can use the tuple to complete as many stages of type transition as you specify. It's done like this: 
+Join a few values into a tuple you can use the tuple to complete as many stages of type transition as you specify. It's done like this: 
 ```f#
 let s2 = (3., 4.) ||> (/)        // It's just another way to devide 3. by 4. 
 let s3 = ((/), 4., 3.) |||> rev  // And yet another way to do this (see the rev function above)
