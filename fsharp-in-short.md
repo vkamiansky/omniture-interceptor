@@ -5,7 +5,7 @@ For more F# knowledge go to http://fsharpforfunandprofit.com/
 
 Here is some information to help you use F# 
 
-1) Every statement has a type. Statements of the same level start with the same indent. Binding is not assignment.
+1) Every statement has a type. Statements of the same level start with the same indent. Binding is not assignment. 
 
 ```f#
 4  // This statement is int
@@ -35,7 +35,7 @@ a := !a + 1        // Get the value of the reference cell a was bound to,
 ```
 Note: the second line of the code above is indented. That means it is a continuation of the statement above, not a statement on the same level.
 
-2) Function types and type transitions in place of function calls. Pipeline and composition bring convenience.
+2) Function types and type transitions in place of function calls. Pipeline and composition bring convenience. 
 
 ```f#
 let div b a =      // This is a function. Its type is infered from its use as float -> float -> float
@@ -91,7 +91,7 @@ let proced a =        // This function has type int -> unit
 ```
 
 
-3) Tuples, lists, arrays
+3) Tuples, lists, arrays 
 
 Tuples have types that are product of several types. If you see something **comma** delimited it's a **tuple**.
 ```f#
@@ -136,3 +136,103 @@ let sum = [3.; 4.; 5.]
                                   // value. Here we specify the initial accumulated value as 0.
 ```
 The result is `12.`.
+```f#
+let sum = [|3.; 4.; 5.|]
+          |> Array.fold (+) 0.    // map, collect, iter and fold also exist for arrays
+```
+
+4) Variant types, pattern matching, recursive calls.
+
+A very popular variant type is `'T option`. Here `'T` is a type parameter which means the option type can go with any other type. Here's how a definition of such type looks like
+```f#
+type Option<'a> =       
+   | Some of 'a           // It is either Some (value of type 'a)...
+   | None                 // or none
+```
+So, `Some 1.` has type `float option`. Let's see how it is used in various list functions.
+```f#
+let lst = [3.; 4.; 5.]
+let found = lst
+            |> List.tryFind ((=) 4.)  // Many to one. The element found. Returns Some 4.
+let notFound = lst      
+               |> List.tryFind ((=) 6.)  // The element not found. Returns None.  
+```
+The filtering function `List.choose` uses this type to determine whether to add an element to the results list
+```f#
+let lst = [3.; 4.; 5.]
+let chosen = lst
+             |> List.choose (fun x ->              // Many to one. Goes through the list
+                  if x<>4. then Some x else None)  // with the specified function and adds to the result list
+                                                   // the value when the function returns Some value 
+```
+The result is `[3.; 5.]`.
+Using such types starts making sense when we later use patterns matching. 
+```f#
+let found = lst
+            |> List.tryFind ((=) 4.) 
+            
+let res = 
+    match found with 
+    | Some f -> sprintf "Found %f" f  // If found is Some f return a formatted string with f
+    | None -> "Not found"             // If found is None return "Not found"
+```
+The result is `Found 4.000000`. That was value matching. Ah, and as you probably guessed sprintf did string formatting for us. You can also match more complex patterns. Remember what commas mean? Then here's another example.
+```f#
+let found4 = lst
+            |> List.tryFind ((=) 4.) 
+let found5 = lst
+            |> List.tryFind ((=) 5.)
+            
+let res = 
+    match found4, found5 with 
+    | None, _ | _, None -> "Not found"            // If one of the coordinates in the tuple is None
+    | Some a, Some b -> sprintf "Found %f %f" a b 
+```
+The result is `Found 4.000000 5.000000`. And there you saw an if pattern `|` in which `_` means 'any value'.
+Patterns can contain complex conditions.
+```f#
+let res = match "hello" with               
+          | s when s.Contains "hell" -> "It's there"           
+          | _ -> "It's not there"
+```
+The result is `It's there`.
+Matching lists is just as easy.
+```f#
+let lst = [3.; 4.; 5.]
+let chosen = lst
+             |> List.choose (fun x ->              
+                  if x<>4. then Some x else None)  
+let res =
+    match chosen with 
+    | [] -> "No results"           
+    | lst -> sprintf "Found %d results" (lst |> List.length)
+```
+The result is `Found 2 results`. Patterns are matched top to bottom, so be careful to place more specific ones before more general ones. By the way, there's a way to use pattern matching in the pipeline. Here's ho it's done.
+```f#
+let lst = [3.; 4.; 5.]
+let res = lst
+             |> List.choose (fun x ->              
+                  if x<>4. then Some x else None)  
+             |> function               
+                | [] -> "No results"           
+                | lst -> sprintf "Found %d results" (lst |> List.length)
+```
+The same result we obtain. 
+Each list when it has items in it also has two things: a **head** which is the first element in the list and a **tail** which is the rest of the list. In patterns the *head* is separated from the *tail* through the use of the `::` operator. This operator can be used to create effective recursive algorithms. For instance, consider the function skip.
+```f#
+let rec skip n (lst : 'a list) =
+    match lst with
+    | _ :: tail -> if n <= 0 then lst else tail |> skip(n - 1)
+    | _ -> []
+```    
+The function skips first n elements of the list and returns the rest. It has the keyword `rec` in its signature that means 'recursive'. Recursive functions are optimized to consume as little memory as usual loop-based ones. The keyword tells the compiler that it should treat the function in a special way as it uses recursion.
+The head-tail operator can also be used to assemble lists element by element. They are not just for pattern use. Consider this.
+```f#
+let rec take n (lst : 'a list) =
+    match lst with
+    | head::tail -> if n > 0 then head :: (tail |> take(n - 1)) else []
+    | _ -> []
+``` 
+The function returns first n elements of the list. 
+
+By now you should have enough F# knowledge to read the sources of the Omniture interceptor and to continue studying F#. 
