@@ -50,7 +50,7 @@ module interceptor =
             |> function
                 | faultyAddrLst when faultyAddrLst |> List.length > 0 ->
                        printf "Not all requests have been matched successfully. See the faulty rel addresses below.\r\n"
-                       faultyAddrLst |> List.iter (fun adr -> printf "\\%s\r\n" adr)
+                       faultyAddrLst |> List.iter (fun adr -> printf "/%s\r\n" adr)
                        printf "The test will be rerun for the addresses above.\r\n"
                        requests := []
                        faultyAddrLst |> repeatRunMatch startTime
