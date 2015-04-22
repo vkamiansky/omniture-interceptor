@@ -56,21 +56,29 @@ So `3. |> div 4.` is the same as `div 4. 3.`. However,  you can make a function 
 ```f#
 let div16 = div 4. >> div 4. // A function composed of two
 
-let s = 3.0 |> div16
+let s = 3. |> div16
 ```
-But what is even cooler is that operators can also be used as functions. However, `(/)` cannot be used in place of `div` for it has its parameters in a natural order. 
+But what is even cooler is that operators can also be used as functions.  
 ```f#
-let div4plus4 = div 4. >> (+) 4.  // first devide, then add
+let div4plus4 = div 4. >> (+) 4.  // First devide, then add
 
 let s = 3.0 |> div4plus4
 ```
+The operator `(/)` cannot be used in place of `div` because it has its parameters in a natural order, i.e. `(/) 3. 4.` yields `0.75`. However, we can design a function that swaps arguments and still use (/) with the *pipeline operator*.
+```f#
+let rev f a b = f b a // Swap arguments
+
+let div16 = rev (/) 4. >> rev (/) 4. // A function composed of two
+
+let s = 3. |> div16 // Same result 
+```
 Usually, pipelines are not used for such trivial arithmetic operations but all the list processing functions are designed specifically for pipline use.
 ```f#
-let lst = [1;2;3]
+let lst = [1; 2; 3]
           |> List.map (fun i -> i + 1) // Add one to each item
 ```
 Or simpler... remember, the operators
 ```f#
-let lst = [1;2;3]
+let lst = [1; 2; 3]
           |> List.map ((+) 1)
 ```
