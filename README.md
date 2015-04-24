@@ -48,12 +48,10 @@ The test scenarios currently implemented include the following:
 
 * Opening page addresses in two environments on mobile and desktop plus the following:
 * Slideshow next on desktop. Slideshow full screen on mobile.
-* Sharing buttons, mail button on desktop and mobile. Print button on mobile.
-* Tabs widget on start page: switching tabs, show more on mobile and desktop. Senaste dygnet on desktop.
+* Sharing buttons, mail button on desktop and mobile. Print button on desktop.
+* Tabs widget on start page: switching tabs, show more, link click on mobile and desktop. Senaste dygnet on desktop.
 * HTML player: waiting for the autorun video to end on desktop and mobile.
-
-Yet to implement:
-
 * Quiz next, next, complete on desktop and mobile.
+
 
 The tool is written in F#. If F# looks double Dutch to you, please, learn the [basics of F#](https://github.com/vkamiansky/omniture-interceptor/blob/master/fsharp-in-short.md).
