@@ -40,6 +40,7 @@ module interceptor =
                                     | Scenario.TabLinkClickBefore lnk -> printf " -\"%s\" Tab link click\r\n" lnk
                                     | Scenario.SwitchMobileBefore -> printf " Mobile version\r\n"
                                     | Scenario.ShareButtomClickBefore btn -> printf " -\"%s\" Share button click\r\n" btn
+                                    | Scenario.QuizAnswerClickBefore -> printf " Quiz answer\r\n"
                                     | Scenario.Error msg -> printf " -Error: %s\r\n" msg; log.Debug msg
                                     | Scenario.VideoDisplay -> Thread.Sleep 90000
                                     | _ -> Thread.Sleep 1000

@@ -61,6 +61,7 @@
     <Compile Include="List.fs" />
     <Compile Include="Omniture.fs" />
     <Compile Include="Request.fs" />
+    <Compile Include="Driver.fs" />
     <Compile Include="Scenario.fs" />
     <Compile Include="Program.fs" />
     <Content Include="testpath.txt">

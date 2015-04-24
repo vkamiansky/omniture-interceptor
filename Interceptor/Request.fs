@@ -10,7 +10,7 @@ module Request =
         let adrLower = adr.ToLowerInvariant()
         requests
         |> List.choose (function
-                               | request when request.Contains("Referer: " + adrLower + "\r\n") -> Some request
+                               | request when request.Contains("Referer: " + adrLower) -> Some request
                                | _ -> None)
 
     let findWithRefererMulEndings adr endings requests =
@@ -44,7 +44,7 @@ module Request =
         |> (+) acc
 
     let calcParamsDiffText requests (curAddress, proAddress) =
-        let platformEndings = [""; "?site=mobile"; "&site=mobile"]
+        let platformEndings = ["\r\n"; "?site=mobile"; "&site=mobile"]
         match (curAddress, proAddress) with
             | (a, b) -> 
                 let requestsAddressA = requests |> findWithRefererMulEndings  a  platformEndings
