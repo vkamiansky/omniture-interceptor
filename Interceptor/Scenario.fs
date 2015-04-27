@@ -80,16 +80,9 @@ module Scenario =
                                         (fun _ -> doAction ShareButtomClickAfter)
                             |> Driver.findAndDo ".b-share__facebook,.b-share__twitter,.b-share__mail,.b-share__print" 
                                         (fun _ drv -> drv |> go url ) 
-                            |> Driver.findVisibleAndDo ".current" 
-                                        (fun options drv ->  
-                                                        doAction SwitchMobileBefore
-                                                        options
-                                                        |> List.tryFind(fun opt -> opt.Text = "MOBILVERSION")
-                                                        |> function
-                                                           | Some switch -> switch.Click();
-                                                           | None -> ()
-                                                        doAction SwitchMobileAfter
-                                                        drv)
+                            |> Driver.clickFirst ".current[href*=\"'channel', 'Mobile'\"]" 
+                                        (fun _ -> doAction SwitchMobileBefore) 
+                                        (fun _ -> doAction SwitchMobileAfter)
                             |> Driver.findAndDo ".b-quiz-list"
                                         (fun _ drv ->
                                                 drv
