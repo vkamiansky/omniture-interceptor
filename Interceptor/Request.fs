@@ -44,11 +44,11 @@ module Request =
         |> (+) acc
 
     let calcParamsDiffText requests (curAddress, proAddress) =
-        let platformEndings = ["\r\n"; "?site=mobile"; "&site=mobile"]
+        let pathEndings = ["\r\n"; "?"]
         match (curAddress, proAddress) with
             | (a, b) -> 
-                let requestsAddressA = requests |> findWithRefererMulEndings  a  platformEndings
-                let requestsAddressB = requests |> findWithRefererMulEndings  b  platformEndings
+                let requestsAddressA = requests |> findWithRefererMulEndings  a  pathEndings
+                let requestsAddressB = requests |> findWithRefererMulEndings  b  pathEndings
                 match requestsAddressA, requestsAddressB with
                     | [], _ | _, [] -> None
                     | first, second when first.Length = second.Length ->  
