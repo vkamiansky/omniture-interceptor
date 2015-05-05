@@ -44,7 +44,7 @@ module Request =
         |> (+) acc
 
     let calcParamsDiffText requests (curAddress, proAddress) =
-        let pathEndings = ["\r\n"; "?"]
+        let pathEndings = ["\r\n"; "?"; "quizresults/?"]
         match (curAddress, proAddress) with
             | (a, b) -> 
                 let requestsAddressA = requests |> findWithRefererMulEndings  a  pathEndings

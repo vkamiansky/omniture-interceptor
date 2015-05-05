@@ -97,7 +97,7 @@ module Scenario =
                             |> Driver.clickFirst ".b-page_article .b-slideshow__group-wrap .b-slideshow__open"
                                         (fun _ -> doAction SlideshowPopupClickBefore) 
                                         (fun drv -> drv |> Driver.back |> ignore; doAction SlideshowPopupClickAfter)
-                            |> Driver.clickAllFresh ".b-share-btn_fb .b-share-btn__link,.b-share-btn_twttr .b-share-btn__link"
+                            |> Driver.clickAllFresh ".b-share-btn_fb .b-share-btn__link,.b-share-btn_twttr .b-share-btn__link, .b-share-btn_whatsapp .b-share-btn__link"
                                         (fun btn -> doAction (ShareButtomClickBefore btn)) 
                                         (fun drv -> drv |> Driver.back |> ignore; doAction SlideshowNextClickAfter)
                             |> Driver.clickAll ".b-share-btn_mail .b-share-btn__link" 
