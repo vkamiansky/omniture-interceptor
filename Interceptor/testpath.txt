@@ -10,7 +10,6 @@ halsoliv/halsovikt/tips-tricks/
 halsoliv/halsovikt/veckomenyer/
 halsoliv/halsovikt/sok/?query=lax
 halsoliv/halsovikt/resultat/
-
 sok/?q=lyssna
 sport/
 tv/nyheter/forlorade-halva-skallen-nar-han-korde-drogpaverkad/
