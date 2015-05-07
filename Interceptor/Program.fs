@@ -27,9 +27,7 @@ module interceptor =
             testRelAddresses 
             |> List.collect (fun rel -> [currentBase + rel; candidateBase + rel])
             |> List.fragment 4
-            |> List.iter 
-                (fun l -> l 
-                          |> Scenario.run 
+            |> List.iter (Scenario.run 
                                   (function
                                     | Scenario.PageOpenBefore adr -> printf " Starting '%s'\r\n" adr
                                     | Scenario.SlideshowNextClickBefore -> printf " -Slideshow Next click\r\n"
@@ -64,8 +62,8 @@ module interceptor =
 
         Omniture.intercept 
                      (fun () -> !on) 
-                     (fun ()-> data) 
-                     (fun req-> requests := (!requests, [req]) ||> List.append; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
+                     (fun () -> data) 
+                     (fun req -> requests := (!requests, [req]) ||> List.append; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
 
         printf "Starting test scenario...\r\n"
         relAddresses |> repeatRunMatch DateTime.Now
