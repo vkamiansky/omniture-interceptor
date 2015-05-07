@@ -10,7 +10,7 @@ module interceptor =
         startTime |> function
             | timePoint when DateTime.Now > timePoint -> (DateTime.Now.Subtract timePoint).TotalMinutes
             | _ -> -1.
-
+                       
     [<EntryPoint>]
     let main argv = 
         let on = ref true    
@@ -45,9 +45,9 @@ module interceptor =
                                     | Scenario.VideoDisplay -> Thread.Sleep 90000
                                     | _ -> Thread.Sleep 1000
                                     ))
-                                   
+                                               
             !requests 
-            |> Request.processParamsDiffTexts currentBase candidateBase testRelAddresses (fun diff -> log.Debug diff)
+            |> Request.processParamsDiffTexts currentBase candidateBase testRelAddresses log.Debug
             |> function
                 | faultyAddrLst when faultyAddrLst |> List.length > 0 ->
                        printf "Not all requests have been matched successfully. See the faulty rel addresses below.\r\n"

@@ -44,7 +44,7 @@ module Request =
         |> (+) acc
 
     let calcParamsDiffText requests (curAddress, proAddress) =
-        let pathEndings = ["\r\n"; "?"; "quizresults/?"]
+        let pathEndings = ["\r\n"; "?"; "&"; "quizresults/?"]
         match (curAddress, proAddress) with
             | (a, b) -> 
                 let requestsAddressA = requests |> findWithRefererMulEndings  a  pathEndings
@@ -63,10 +63,8 @@ module Request =
 
     let processParamsDiffTexts currentBase candidateBase relAddresses doProcessText requests =
         relAddresses 
-        |> List.map (fun adr -> (currentBase + adr, candidateBase + adr) 
+        |> List.choose (fun adr -> (currentBase + adr, candidateBase + adr) 
                                 |> calcParamsDiffText requests
                                 |> function
                                           | Some diff -> doProcessText diff; None
                                           | None -> Some adr)
-        |> List.choose (fun unmatched -> unmatched)
-        
