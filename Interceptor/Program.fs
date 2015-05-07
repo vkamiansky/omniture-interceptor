@@ -65,7 +65,7 @@ module interceptor =
         Omniture.intercept 
                      (fun () -> !on) 
                      (fun ()-> data) 
-                     (fun req-> requests := !requests |> List.append [req]; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
+                     (fun req-> requests := (!requests, [req]) ||> List.append; printf "Caught one. Now they are %d.\r\n" (!requests).Length;)
 
         printf "Starting test scenario...\r\n"
         relAddresses |> repeatRunMatch DateTime.Now
